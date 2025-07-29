@@ -1,22 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
-# 日本語と半角英数字の間に半角スペースを挿入
+# æ¥æ¬èªã¨åè§è±æ°å­ã®éã«åè§ã¹ãã¼ã¹ãæ¿å¥
 
 # OS detection for sed compatibility
 OS_TYPE=$(uname -s)
 
-# ファイルパス取得
+# ãã¡ã¤ã«ãã¹åå¾
 if [ -n "${1:-}" ]; then
   file_path="$1"
 else
   file_path=$(jq -r '.tool_input.file_path // empty' <<<"${CLAUDE_TOOL_INPUT:-$(cat)}")
 fi
 
-# 基本チェック
+# åºæ¬ãã§ãã¯
 [ -z "$file_path" ] || [ ! -f "$file_path" ] || [ ! -r "$file_path" ] || [ ! -w "$file_path" ] && exit 0
 
-# 除外リスト
+# é¤å¤ãªã¹ã
 EXCLUSIONS_FILE="$(dirname "${BASH_SOURCE[0]}")/ja-space-exclusions.json"
 
 # OS-compatible temporary file creation
@@ -30,43 +30,43 @@ case "$OS_TYPE" in
 esac
 trap 'rm -f "$temp_file"' EXIT
 
-# Unicode文字処理: macOSではPerlを優先、LinuxではGNU sedを使用
+# Unicode æå­å¦ç: macOS ã§ã¯ Perl ãåªåã Linux ã§ã¯ GNU sed ãä½¿ç¨
 if [[ "$OS_TYPE" == "Darwin" ]] && command -v perl >/dev/null 2>&1; then
   # macOS with Unicode issues: use Perl
   perl -CIO -pe '
-    s/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])([a-zA-Z0-9])/$1 $2/g;
-    s/([a-zA-Z0-9])([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/$1 $2/g;
-    s/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])(\()/$1 $2/g;
-    s/(\))([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/$1 $2/g;
+    s/([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])([a-zA-Z0-9])/$1 $2/g;
+    s/([a-zA-Z0-9])([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])/$1 $2/g;
+    s/([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])(\()/$1 $2/g;
+    s/(\))([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])/$1 $2/g;
     s/(\))([a-zA-Z0-9])/$1 $2/g;
-    s/(%)([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/$1 $2/g;
-    s/([（(\[{][^）)\]}]*[）)\]}])\s+(の|と|で|が|を|は|に)/$1$2/g;
+    s/(%)([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])/$1 $2/g;
+    s/([ï¼ (\[{][^ï¼)\]}]*[ï¼)\]}])\s+(ã®|ã¨|ã§|ã|ã|ã¯|ã«)/$1$2/g;
   ' "$file_path" > "$temp_file"
 else
   # GNU sed (Linux) or BSD sed with Unicode support
   sed -E \
-    -e 's/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])([a-zA-Z0-9])/\1 \2/g' \
-    -e 's/([a-zA-Z0-9])([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/\1 \2/g' \
-    -e 's/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])(\()/\1 \2/g' \
-    -e 's/(\))([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/\1 \2/g' \
+    -e 's/([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])([a-zA-Z0-9])/\1 \2/g' \
+    -e 's/([a-zA-Z0-9])([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])/\1 \2/g' \
+    -e 's/([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])(\()/\1 \2/g' \
+    -e 's/(\))([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])/\1 \2/g' \
     -e 's/(\))([a-zA-Z0-9])/\1 \2/g' \
-    -e 's/(%)([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/\1 \2/g' \
-    -e 's/([（(\[{][^）)\]}]*[）)\]}])\s+(の|と|で|が|を|は|に)/\1\2/g' \
+    -e 's/(%)([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])/\1 \2/g' \
+    -e 's/([ï¼ (\[{][^ï¼)\]}]*[ï¼)\]}])\s+(ã®|ã¨|ã§|ã|ã|ã¯|ã«)/\1\2/g' \
     "$file_path" > "$temp_file"
 fi
 
-# 除外リスト適用
+# é¤å¤ãªã¹ãé©ç¨
 if [ -f "$EXCLUSIONS_FILE" ] && command -v jq >/dev/null 2>&1; then
   while IFS= read -r pattern; do
     [ -z "$pattern" ] && continue
     escaped="${pattern//[\[\\.^$()|*+?{]/\\&}"
     
-    # OS対応の除外処理
+    # OS å¯¾å¿ã®é¤å¤å¦ç
     if [[ "$OS_TYPE" == "Darwin" ]] && command -v perl >/dev/null 2>&1; then
-      spaced=$(perl -CIO -pe 's/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])([a-zA-Z0-9])/$1 $2/g; s/([a-zA-Z0-9])([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/$1 $2/g' <<<"$escaped")
+      spaced=$(perl -CIO -pe 's/([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])([a-zA-Z0-9])/$1 $2/g; s/([a-zA-Z0-9])([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])/$1 $2/g' <<<"$escaped")
       perl -CIO -i -pe "s/\Q$spaced\E/$pattern/g" "$temp_file"
     else
-      spaced=$(sed -E 's/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])([a-zA-Z0-9])/\1 \2/g; s/([a-zA-Z0-9])([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/\1 \2/g' <<<"$escaped")
+      spaced=$(sed -E 's/([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])([a-zA-Z0-9])/\1 \2/g; s/([a-zA-Z0-9])([ã-ãã¡-ã¿ä¸-é¿¿ã-ä¶¿])/\1 \2/g' <<<"$escaped")
       case "$OS_TYPE" in
         Darwin|*BSD)
           sed -i '' "s/$spaced/$pattern/g" "$temp_file"
