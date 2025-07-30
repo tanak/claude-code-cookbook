@@ -12,6 +12,7 @@
     "allow": [
       "Bash(flutter test*)",
       "Bash(flutter build*)",
+      "Bash(npm test*)",
       "Bash(*)",
       "Edit(**)",
       "Glob(**)",
