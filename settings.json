@@ -126,6 +126,19 @@
         "hooks": [
           {
             "type": "command",
+            "command": "~/.claude/scripts/ja-space-format.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/scripts/repair.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
             "command": "~/.claude/scripts/preserve-file-permissions.sh"
           }
         ]
