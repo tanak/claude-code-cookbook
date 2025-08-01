@@ -118,28 +118,14 @@
           {
             "type": "command",
             "command": "~/.claude/scripts/auto-comment.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
+          },
           {
             "type": "command",
-            "command": "~/.claude/scripts/ja-space-format.sh"
+            "command": "~/.claude/scripts/preserve-file-permissions.sh"
           },
           {
             "type": "command",
             "command": "python ~/.claude/scripts/repair.py \"$CLAUDE_FILE_PATH\""
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/scripts/preserve-file-permissions.sh"
           }
         ]
       }
@@ -172,6 +158,6 @@
     ]
   },
   "feedbackSurveyState": {
-    "lastShownTime": 1753958143048
+    "lastShownTime": 1754014529711
   }
 }
