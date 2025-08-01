@@ -32,8 +32,8 @@ trap 'rm -f "$temp_file"' EXIT
 
 # Unicode 文字処理: macOS では Perl を優先、 Linux では GNU sed を使用
 if [[ "$OS_TYPE" == "Darwin" ]] && command -v perl >/dev/null 2>&1; then
-  # macOS with Unicode issues: use Perl
-  perl -CIO -pe '
+  # macOS with Unicode issues: use Perl with proper UTF-8 handling
+  LANG=ja_JP.UTF-8 LC_ALL=ja_JP.UTF-8 perl -Mutf8 -CSD -pe '
     s/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])([a-zA-Z0-9])/$1 $2/g;
     s/([a-zA-Z0-9])([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/$1 $2/g;
     s/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])(\()/$1 $2/g;
@@ -63,8 +63,8 @@ if [ -f "$EXCLUSIONS_FILE" ] && command -v jq >/dev/null 2>&1; then
     
     # OS 対応の除外処理
     if [[ "$OS_TYPE" == "Darwin" ]] && command -v perl >/dev/null 2>&1; then
-      spaced=$(perl -CIO -pe 's/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])([a-zA-Z0-9])/$1 $2/g; s/([a-zA-Z0-9])([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/$1 $2/g' <<<"$escaped")
-      perl -CIO -i -pe "s/\Q$spaced\E/$pattern/g" "$temp_file"
+      spaced=$(LANG=ja_JP.UTF-8 LC_ALL=ja_JP.UTF-8 perl -Mutf8 -CSD -pe 's/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])([a-zA-Z0-9])/$1 $2/g; s/([a-zA-Z0-9])([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/$1 $2/g' <<<"$escaped")
+      LANG=ja_JP.UTF-8 LC_ALL=ja_JP.UTF-8 perl -Mutf8 -CSD -i -pe "s/\Q$spaced\E/$pattern/g" "$temp_file"
     else
       spaced=$(sed -E 's/([ぁ-ゟァ-ヿ一-鿿㐀-䶿])([a-zA-Z0-9])/\1 \2/g; s/([a-zA-Z0-9])([ぁ-ゟァ-ヿ一-鿿㐀-䶿])/\1 \2/g' <<<"$escaped")
       case "$OS_TYPE" in
